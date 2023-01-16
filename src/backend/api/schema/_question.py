@@ -13,12 +13,12 @@ class QuestionCreate(QuestionBase):
     ...
 
 
-class QuestionEdit(QuestionBase):
+class QuestionEdit(BaseModel):
     title: str
     body: str
 
 
-class Question(QuestionBase):
+class QuestionInDB(QuestionBase):
     id: int
 
     class Config:

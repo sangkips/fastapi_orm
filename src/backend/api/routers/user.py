@@ -4,7 +4,8 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from api.schema._question import Question
+from api.models.users import User
+from api.schema._question import QuestionInDB
 from api.schema._user import UserCreate, UserInDB
 from api.utils.user_crud import (
     get_user,
@@ -14,6 +15,7 @@ from api.utils.user_crud import (
 )
 from api.utils.question_crud import get_user_questions
 from api.db.database import get_db
+from api.schema.profile import UserProfile
 
 
 router = APIRouter()
@@ -40,7 +42,7 @@ async def get_single_user(user_id: int, db: Session = Depends(get_db)):
 
 # get queations beloging to a given user
 @router.get(
-    "/{user_id}/questions", response_model=List[Question])
+    "/{user_id}/questions", response_model=List[QuestionInDB])
 async def get_questions_for_given_user(user_id: int, db: Session = Depends(get_db)):
     questions = get_user_questions(user_id=user_id, db=db)
     return questions
@@ -62,21 +64,18 @@ def create_new_user(user: UserCreate, db: Session = Depends(get_db)):
     return create_user(db=db, user=user)
 
 
-"""  
-# update user based on a given id
-@router.put("{user_id}", )
-async def update_user(user_id: int, user: UserEdit, db: Session = Depends(get_db)):
-    db_user = get_user(db, user_id, user)
-    if db_user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User does not exist"
-        )
-
+# update user based on a given username
+@router.put("{username}", response_model=UserProfile)
+async def update_user(username: str, user: UserProfile, db: Session = Depends(get_db)):
+    db_user = db.query(User).filter(User.username == username).first()
+    db_user.first_name = user.first_name
+    db_user.last_name = user.last_name
+    db_user.bio = user.bio
     db.add(db_user)
-    db.commit()
     db.refresh(db_user)
-    return db_user
-"""
+    db.commit()
+    return {"username": db_user.username, "first_name": db_user.first_name, "last_name": db_user.last_name, "bio": db_user.bio}
+
 
 # delete user
 

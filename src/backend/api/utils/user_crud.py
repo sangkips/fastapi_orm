@@ -1,7 +1,9 @@
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from api.models.users import User
 from api.schema._user import UserCreate
+
 
 from api.auth.security import PasswordHasher
 

@@ -2,19 +2,21 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 
+
 from sqlalchemy.orm import Session
 
 
-from api.schema._question import QuestionCreate, Question, QuestionEdit
-from api.utils.question_crud import get_question, get_questions, create_question
+from api.schema._question import QuestionCreate, QuestionEdit, QuestionInDB
+from api.utils.question_crud import get_question, get_questions, create_question, update_given_question
 from api.db.database import get_db
+
 
 router = APIRouter()
 
 
 @router.get(
     "/",
-    response_model=list[Question],
+    response_model=list[QuestionInDB],
     status_code=status.HTTP_200_OK,
 )
 async def get_all_questions(db: Session = Depends(get_db)):
@@ -34,7 +36,7 @@ async def get_single_question(question_id: int, db: Session = Depends(get_db)):
 
 @router.post(
     "/",
-    response_model=Question,
+    response_model=QuestionInDB,
     status_code=status.HTTP_201_CREATED,
 )
 async def create_new_question(question: QuestionCreate, db: Session = Depends(get_db)):
@@ -42,14 +44,14 @@ async def create_new_question(question: QuestionCreate, db: Session = Depends(ge
     return new_question
 
 
-@router.patch("/{question_id}")
-async def update_question(question: QuestionEdit, db: Session = Depends(get_db)):
-    question_to_update = Question(db, question)
-    if question_to_update is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Question does not exist"
-        )
-    return question_to_update
+@router.put("/{question_id}")
+async def update_question(question_id: int, question: QuestionEdit, db: Session = Depends(get_db)):
+    question_updated = update_given_question(
+        question_id=question_id, question=question, db=db)
+    if not question_updated:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Question with id {question_id} not found")
+    return {"message": "Question updated Successfully"}
 
 
 @router.delete(
