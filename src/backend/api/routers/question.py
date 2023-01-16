@@ -46,12 +46,13 @@ async def create_new_question(question: QuestionCreate, db: Session = Depends(ge
 
 @router.put("/{question_id}")
 async def update_question(question_id: int, question: QuestionEdit, db: Session = Depends(get_db)):
+
     question_updated = update_given_question(
         question_id=question_id, question=question, db=db)
-    if not question_updated:
+    if question_updated is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Question with id {question_id} not found")
-    return {"message": "Question updated Successfully"}
+    return question_updated
 
 
 @router.delete(

@@ -1,3 +1,4 @@
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from fastapi.encoders import jsonable_encoder
 
@@ -34,9 +35,12 @@ def get_user_questions(db: Session, user_id: int):
 
 def update_given_question(question_id: int, question: QuestionEdit, db: Session):
     question_to_update = db.query(Question).filter(Question.id == question_id)
-    if not question_to_update.first():
-        return f"Question with id {question_id} does not exist"
+    if question_to_update.first() is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Question with id {question_id} not found")
 
+    # jsonable_encoder(question).update(user_id_id=user_id)
     question_to_update.update(jsonable_encoder(question))
     db.commit()
+
     return {"message": "Question updated successfully"}

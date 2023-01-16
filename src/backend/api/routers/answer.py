@@ -4,8 +4,8 @@ from typing import List
 from sqlalchemy.orm import Session
 
 
-from api.schema._answer import AnswerCreate, Answer
-from api.utils.answer_crud import get_answer, get_answers, create_answer
+from api.schema._answer import AnswerCreate, Answer, AnswerEdit
+from api.utils.answer_crud import get_answer, get_answers, create_answer, update_given_answer
 from api.db.database import get_db
 
 
@@ -34,11 +34,15 @@ async def create_new_answer(answer: AnswerCreate, db: Session = Depends(get_db))
     return new_answer
 
 
-"""  
 @router.put("{answer_id}")
-async def update_answer():
-    pass
-"""
+async def update_answer(answer_id: int, answer: AnswerEdit, db: Session = Depends(get_db)):
+    answer_to_update = update_given_answer(
+        db=db, answer_id=answer_id, answer=answer)
+    if answer_to_update is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Answer with given id {answer_id} does not exist"
+        )
+    return {"message": "Answer updated successfully"}
 
 
 @router.delete("/{answer_id}", response_model=Answer)
@@ -51,4 +55,4 @@ async def delete_answer(answer_id: int, db: Session = Depends(get_db)):
     db.delete(answer)
     db.commit()
     db.refresh(answer)
-    return {"Detail": "Deletion successfull"}
+    return answer

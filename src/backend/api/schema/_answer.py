@@ -12,6 +12,10 @@ class AnswerCreate(AnswerBase):
     ...
 
 
+class AnswerEdit(BaseModel):
+    body: str
+
+
 class Answer(AnswerBase):
     id: int
 

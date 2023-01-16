@@ -1,7 +1,9 @@
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
+from fastapi.encoders import jsonable_encoder
 
 from api.models.answers import Answer
-from api.schema._answer import AnswerCreate
+from api.schema._answer import AnswerCreate, AnswerEdit
 
 
 def get_answer(db: Session, answer_id: int):
@@ -27,3 +29,14 @@ def create_answer(db: Session, answer: AnswerCreate):
 
 def get_user_answers(db: Session, user_id: int):
     return db.query(Answer).filter(Answer.user_id == user_id).all()
+
+
+def update_given_answer(db: Session, answer_id: int, answer: AnswerEdit):
+    given_answer = db.query(Answer).filter(Answer.id == answer_id)
+    if given_answer.first() is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Question with id {answer_id} not found")
+
+    given_answer.update(jsonable_encoder(answer))
+    db.commit()
+    return {"message": "Answer updated successfully"}
