@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 
 from api.schema._answer import AnswerCreate, Answer, AnswerEdit
-from api.utils.answer_crud import get_answer, get_answers, create_answer, update_given_answer
+from api.utils.answer_crud import get_answer, get_answers, create_answer, update_given_answer, delete_given_answer
 from api.db.database import get_db
 
 
@@ -45,14 +45,12 @@ async def update_answer(answer_id: int, answer: AnswerEdit, db: Session = Depend
     return {"message": "Answer updated successfully"}
 
 
-@router.delete("/{answer_id}", response_model=Answer)
+@router.delete("/{answer_id}")
 async def delete_answer(answer_id: int, db: Session = Depends(get_db)):
-    answer = get_answer(db, answer_id)
+    answer = delete_given_answer(db=db, answer_id=answer_id)
     if answer is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Answer does not exist"
         )
-    db.delete(answer)
-    db.commit()
-    db.refresh(answer)
-    return answer
+
+    return {"message": "Answer deleted successfully"}

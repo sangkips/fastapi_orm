@@ -35,8 +35,18 @@ def update_given_answer(db: Session, answer_id: int, answer: AnswerEdit):
     given_answer = db.query(Answer).filter(Answer.id == answer_id)
     if given_answer.first() is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Question with id {answer_id} not found")
+                            detail=f"Answer with id {answer_id} not found")
 
     given_answer.update(jsonable_encoder(answer))
     db.commit()
     return {"message": "Answer updated successfully"}
+
+
+def delete_given_answer(answer_id: int, db: Session):
+    given_answer = db.query(Answer).filter(Answer.id == answer_id)
+    if given_answer.first() is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Answer with id {answer_id} not found")
+    given_answer.delete(synchronize_session=False)
+    db.commit()
+    return {"message": "Answer deleted successfully"}

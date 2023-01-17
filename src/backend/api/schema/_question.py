@@ -1,16 +1,17 @@
+from typing import Optional
 from pydantic import BaseModel
 
 
 class QuestionBase(BaseModel):
     title: str
     body: str
-    user_id: int
-    tag_id: int
-    vote_id: int | None = None
+    tag_id: Optional[int]
+    vote_id: Optional[int]
 
 
 class QuestionCreate(QuestionBase):
-    ...
+    title: str
+    body: str
 
 
 class QuestionEdit(BaseModel):
