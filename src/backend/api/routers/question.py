@@ -11,6 +11,7 @@ from api.utils.question_crud import (
     get_questions,
     create_question,
     update_given_question,
+    delete_given_question,
 )
 from api.db.database import get_db
 from api.models.users import User
@@ -56,7 +57,9 @@ async def create_new_question(
 
 @router.put("/{question_id}")
 async def update_question(
-    question_id: int, question: QuestionEdit, db: Session = Depends(get_db)
+    question_id: int,
+    question: QuestionEdit,
+    db: Session = Depends(get_db),
 ):
 
     question_updated = update_given_question(
@@ -73,13 +76,19 @@ async def update_question(
 @router.delete(
     "/{question_id}",
 )
-async def delete_question(question_id: int, db: Session = Depends(get_db)):
-    question = get_question(db, question_id)
+async def delete_question(
+    question_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    question = get_question(db=db, question_id=question_id)
     if question is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Question does not exist"
         )
-    db.delete(question)
-    db.commit()
-
-    return {"message": "Successfully deleted the question"}
+    if question.user_id == current_user.id or current_user.is_superuser:
+        delete_given_question(db=db, question_id=question_id, user_id=current_user.id)
+        return {"message": "Successfully deleted the question"}
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED, detail="Permission denied"
+    )

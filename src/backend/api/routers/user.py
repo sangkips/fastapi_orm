@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 
@@ -41,8 +40,7 @@ async def get_single_user(user_id: int, db: Session = Depends(get_db)):
 
 
 # get queations beloging to a given user
-@router.get(
-    "/{user_id}/questions", response_model=List[QuestionInDB])
+@router.get("/{user_id}/questions", response_model=List[QuestionInDB])
 async def get_questions_for_given_user(user_id: int, db: Session = Depends(get_db)):
     questions = get_user_questions(user_id=user_id, db=db)
     return questions
@@ -74,7 +72,12 @@ async def update_user(username: str, user: UserProfile, db: Session = Depends(ge
     db.add(db_user)
     db.refresh(db_user)
     db.commit()
-    return {"username": db_user.username, "first_name": db_user.first_name, "last_name": db_user.last_name, "bio": db_user.bio}
+    return {
+        "username": db_user.username,
+        "first_name": db_user.first_name,
+        "last_name": db_user.last_name,
+        "bio": db_user.bio,
+    }
 
 
 # delete user

@@ -27,9 +27,7 @@ def get_user_questions(db: Session, user_id: int):
     return db.query(Question).filter(Question.user_id == user_id).all()
 
 
-def update_given_question(
-    question_id: int, question: QuestionEdit, db: Session, user_id: int
-):
+def update_given_question(question_id: int, question: QuestionEdit, db: Session):
     question_to_update = db.query(Question).filter(Question.id == question_id)
     if question_to_update.first() is None:
         raise HTTPException(
@@ -42,3 +40,16 @@ def update_given_question(
     db.commit()
 
     return {"message": "Question updated successfully"}
+
+
+def delete_given_question(question_id: int, db: Session, user_id: int):
+    question_to_delete = db.query(Question).filter(Question.id == question_id)
+    if question_to_delete.first() is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Question with id {question_id} not found",
+        )
+    question_to_delete.delete(synchronize_session=False)
+    db.commit()
+
+    return {"message": "Question successfully deleted"}
